@@ -56,6 +56,7 @@
 #include <libsolidity/interface/Version.h>
 #include <libsolidity/parsing/Parser.h>
 
+#include <libsolidity/codegen/ir/Common.h>
 #include <libsolidity/codegen/ir/IRGenerator.h>
 
 #include <libyul/YulString.h>
@@ -1361,14 +1362,30 @@ void CompilerStack::generateEVMFromIR(ContractDefinition const& _contract)
 	//cout << yul::AsmPrinter{}(*stack.parserResult()->code) << endl;
 
 	// TODO: support passing metadata
-	// TODO: use stack.assemble here!
-	yul::MachineAssemblyObject init;
-	yul::MachineAssemblyObject runtime;
-	std::tie(init, runtime) = stack.assembleWithDeployed(IRNames::deployedObject(_contract));
-	compiledContract.object = std::move(*init.bytecode);
-	compiledContract.runtimeObject = std::move(*runtime.bytecode);
-	// TODO: refactor assemblyItems, runtimeAssemblyItems, generatedSources,
-	//       assemblyString, assemblyJSON, and functionEntryPoints to work with this code path
+
+	tie(compiledContract.evmAssembly, compiledContract.evmRuntimeAssembly) = stack.assembleEVM(IRNames::deployedObject(_contract));
+	solAssert(compiledContract.evmAssembly, "");
+	try
+	{
+		// Assemble deployment (incl. runtime) object.
+		compiledContract.object = compiledContract.evmAssembly->assemble();
+	}
+	catch(evmasm::AssemblyException const&)
+	{
+		solAssert(false, "Assembly exception for bytecode");
+	}
+	solAssert(compiledContract.object.immutableReferences.empty(), "Leftover immutables.");
+
+	solAssert(compiledContract.evmRuntimeAssembly, "");
+	try
+	{
+		// Assemble runtime object.
+		compiledContract.runtimeObject = compiledContract.evmRuntimeAssembly->assemble();
+	}
+	catch(evmasm::AssemblyException const&)
+	{
+		solAssert(false, "Assembly exception for deployed bytecode");
+	}
 
 	// Throw a warning if EIP-170 limits are exceeded:
 	//   If contract creation returns data with length greater than 0x6000 (214 + 213) bytes,
