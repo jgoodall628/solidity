@@ -216,7 +216,7 @@ MachineAssemblyObject AssemblyStack::assemble(Machine _machine) const
 	return MachineAssemblyObject();
 }
 
-std::pair<MachineAssemblyObject, MachineAssemblyObject> AssemblyStack::assembleWithDeployed(optional<string_view> _deployName) const
+std::pair<std::shared_ptr<evmasm::Assembly>, std::shared_ptr<evmasm::Assembly>> AssemblyStack::assembleEVM(optional<string_view> _deployName) const
 {
 	yulAssert(m_analysisSuccessful, "");
 	yulAssert(m_parserResult, "");
@@ -227,18 +227,6 @@ std::pair<MachineAssemblyObject, MachineAssemblyObject> AssemblyStack::assembleW
 	EthAssemblyAdapter adapter(assembly);
 	compileEVM(adapter, m_optimiserSettings.optimizeStackAllocation);
 
-	MachineAssemblyObject creationObject;
-	creationObject.bytecode = make_shared<evmasm::LinkerObject>(assembly.assemble());
-	yulAssert(creationObject.bytecode->immutableReferences.empty(), "Leftover immutables.");
-	creationObject.assembly = assembly.assemblyString();
-	creationObject.sourceMappings = make_unique<string>(
-		evmasm::AssemblyItem::computeSourceMapping(
-			assembly.items(),
-			{{scanner().charStream() ? scanner().charStream()->name() : "", 0}}
-		)
-	);
-
-	MachineAssemblyObject deployedObject;
 	optional<size_t> subIndex;
 
 	// Pick matching assembly if name was given
@@ -260,11 +248,35 @@ std::pair<MachineAssemblyObject, MachineAssemblyObject> AssemblyStack::assembleW
 	if (subIndex.has_value())
 	{
 		evmasm::Assembly& runtimeAssembly = assembly.sub(*subIndex);
-		deployedObject.bytecode = make_shared<evmasm::LinkerObject>(runtimeAssembly.assemble());
-		deployedObject.assembly = runtimeAssembly.assemblyString();
+		return {make_shared<evmasm::Assembly>(assembly), make_shared<evmasm::Assembly>(runtimeAssembly)};
+	}
+
+	return {make_shared<evmasm::Assembly>(assembly), {}};
+}
+
+std::pair<MachineAssemblyObject, MachineAssemblyObject> AssemblyStack::assembleWithDeployed(optional<string_view> _deployName) const
+{
+	auto [creation, deployed] = assembleEVM(_deployName);
+
+	MachineAssemblyObject creationObject;
+	creationObject.bytecode = make_shared<evmasm::LinkerObject>(creation->assemble());
+	yulAssert(creationObject.bytecode->immutableReferences.empty(), "Leftover immutables.");
+	creationObject.assembly = creation->assemblyString();
+	creationObject.sourceMappings = make_unique<string>(
+		evmasm::AssemblyItem::computeSourceMapping(
+			creation->items(),
+			{{scanner().charStream() ? scanner().charStream()->name() : "", 0}}
+		)
+	);
+
+	MachineAssemblyObject deployedObject;
+	if (deployed)
+	{
+		deployedObject.bytecode = make_shared<evmasm::LinkerObject>(deployed->assemble());
+		deployedObject.assembly = deployed->assemblyString();
 		deployedObject.sourceMappings = make_unique<string>(
 			evmasm::AssemblyItem::computeSourceMapping(
-				runtimeAssembly.items(),
+				deployed->items(),
 				{{scanner().charStream() ? scanner().charStream()->name() : "", 0}}
 			)
 		);
