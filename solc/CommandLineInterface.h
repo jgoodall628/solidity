@@ -22,23 +22,18 @@
  */
 #pragma once
 
+#include <solc/CommandLineParser.h>
+
 #include <libsolidity/interface/CompilerStack.h>
 #include <libsolidity/interface/DebugSettings.h>
 #include <libsolidity/interface/FileReader.h>
-#include <libsolidity/interface/ImportRemapper.h>
 #include <libyul/AssemblyStack.h>
-#include <liblangutil/EVMVersion.h>
-
-#include <boost/program_options.hpp>
-#include <boost/filesystem/path.hpp>
 
 #include <memory>
+#include <string>
 
 namespace solidity::frontend
 {
-
-//forward declaration
-enum class DocumentationType: uint8_t;
 
 class CommandLineInterface
 {
@@ -83,11 +78,9 @@ private:
 	void handleGasEstimation(std::string const& _contract);
 	void handleStorageLayout(std::string const& _contract);
 
-	/// Fills @a m_sourceCodes initially and @a m_redirects.
-	bool readInputFilesAndConfigureRemappings();
-	/// Tries to read from the file @a _input or interprets _input literally if that fails.
-	/// It then tries to parse the contents and appends to m_libraries.
-	bool parseLibraryOption(std::string const& _input);
+	/// Reads the content of input files specified on the command line and passes them to FileReader.
+	/// @return false if there are no input files or input files cannot be read.
+	bool readInputFilesAndConfigureFileReader();
 
 	/// Tries to read @ m_sourceCodes as a JSONs holding ASTs
 	/// such that they can be imported into the compiler  (importASTs())
@@ -105,38 +98,10 @@ private:
 	/// @arg _json json string to be written
 	void createJson(std::string const& _fileName, std::string const& _json);
 
-	size_t countEnabledOptions(std::vector<std::string> const& _optionNames) const;
-	static std::string joinOptionNames(std::vector<std::string> const& _optionNames, std::string _separator = ", ");
-
 	bool m_error = false; ///< If true, some error occurred.
-
-	bool m_onlyAssemble = false;
-
-	bool m_onlyLink = false;
-
 	FileReader m_fileReader;
-
-	/// Compiler arguments variable map
-	boost::program_options::variables_map m_args;
-	/// list of remappings
-	std::vector<ImportRemapper::Remapping> m_remappings;
-	/// map of library names to addresses
-	std::map<std::string, util::h160> m_libraries;
-	/// Solidity compiler stack
 	std::unique_ptr<frontend::CompilerStack> m_compiler;
-	CompilerStack::State m_stopAfter = CompilerStack::State::CompilationSuccessful;
-	/// EVM version to use
-	langutil::EVMVersion m_evmVersion;
-	/// How to handle revert strings
-	RevertStrings m_revertStrings = RevertStrings::Default;
-	/// Chosen hash method for the bytecode metadata.
-	CompilerStack::MetadataHash m_metadataHash = CompilerStack::MetadataHash::IPFS;
-	/// Model checker settings.
-	ModelCheckerSettings m_modelCheckerSettings;
-	/// Whether or not to colorize diagnostics output.
-	bool m_coloredOutput = true;
-	/// Whether or not to output error IDs.
-	bool m_withErrorIds = false;
+	CommandLineOptions m_options;
 };
 
 }
