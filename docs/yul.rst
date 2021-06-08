@@ -1076,6 +1076,16 @@ regular strings in native encoding. For code,
 
 Above, ``Block`` refers to ``Block`` in the Yul code grammar explained in the previous chapter.
 
+.. note::
+
+    The data object called ``".metadata"`` has a special meaning:
+    It cannot be accessed from code and is always appended to the very end of the
+    bytecode, regardless of its position in the object.
+
+    Other data objects with special significance might be added in the
+    future, but their name will always start with a ``.``.
+
+
 An example Yul Object is shown below:
 
 .. code-block:: yul
