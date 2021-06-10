@@ -49,6 +49,9 @@ enum class InputMode
 
 struct OutputSelection
 {
+	bool operator!=(OutputSelection const& _other) const { return !(*this == _other); }
+	bool operator==(OutputSelection const& _other) const;
+
 	bool astCompactJson = false;
 	bool asm_ = false;
 	bool asmJson = false;
@@ -68,6 +71,9 @@ struct OutputSelection
 
 struct CombinedJsonRequests
 {
+	bool operator!=(CombinedJsonRequests const& _other) const { return !(*this == _other); }
+	bool operator==(CombinedJsonRequests const& _other) const;
+
 	bool abi = false;
 	bool metadata = false;
 	bool binary = false;
@@ -89,6 +95,9 @@ struct CombinedJsonRequests
 
 struct CommandLineOptions
 {
+	bool operator==(CommandLineOptions const& _other) const;
+	bool operator!=(CommandLineOptions const& _other) const { return !(*this == _other); }
+
 	// Input Options
 	std::set<boost::filesystem::path> sourceFilePaths;
 	std::string standardJsonInputFile;
