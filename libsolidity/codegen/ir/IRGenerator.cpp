@@ -21,8 +21,8 @@
  * Component that translates Solidity code into Yul.
  */
 
+#include <libsolidity/codegen/ir/Common.h>
 #include <libsolidity/codegen/ir/IRGenerator.h>
-
 #include <libsolidity/codegen/ir/IRGeneratorForStatements.h>
 
 #include <libsolidity/ast/AST.h>
@@ -106,12 +106,12 @@ pair<string, string> IRGenerator::run(
 	asmStack.optimize();
 
 	string warning =
-		"/*******************************************************\n"
-		" *                       WARNING                       *\n"
-		" *  Solidity to Yul compilation is still EXPERIMENTAL  *\n"
-		" *       It can result in LOSS OF FUNDS or worse       *\n"
-		" *                !USE AT YOUR OWN RISK!               *\n"
-		" *******************************************************/\n\n";
+		"/*****************************************************|\n"
+		"|                       WARNING                       |\n"
+		"|  Solidity to Yul compilation is still EXPERIMENTAL  |\n"
+		"|       It can result in LOSS OF FUNDS or worse       |\n"
+		"|                !USE AT YOUR OWN RISK!               |\n"
+		"|*****************************************************/\n\n";
 
 	return {warning + ir, warning + asmStack.print()};
 }
@@ -131,6 +131,7 @@ string IRGenerator::generate(
 
 	Whiskers t(R"(
 		object "<CreationObject>" {
+			<sourceLocationComment>
 			code {
 				<memoryInitCreation>
 				<callValueCheck>
@@ -142,6 +143,7 @@ string IRGenerator::generate(
 				<deploy>
 				<functions>
 			}
+			<sourceLocationComment>
 			object "<DeployedObject>" {
 				code {
 					<memoryInitDeployed>
@@ -160,6 +162,8 @@ string IRGenerator::generate(
 	resetContext(_contract);
 	for (VariableDeclaration const* var: ContractType(_contract).immutableVariables())
 		m_context.registerImmutableVariable(*var);
+
+	t("sourceLocationComment", sourceLocationComment(_contract, m_context));
 
 	t("CreationObject", IRNames::creationObject(_contract));
 	t("library", _contract.isLibrary());
@@ -312,11 +316,15 @@ string IRGenerator::generateFunction(FunctionDefinition const& _function)
 	return m_context.functionCollector().createFunction(functionName, [&]() {
 		m_context.resetLocalVariables();
 		Whiskers t(R"(
+			<sourceLocationComment>
 			function <functionName>(<params>)<?+retParams> -> <retParams></+retParams> {
 				<retInit>
 				<body>
 			}
 		)");
+
+		t("sourceLocationComment", sourceLocationComment(_function, m_context));
+
 		t("functionName", functionName);
 		vector<string> params;
 		for (auto const& varDecl: _function.parameters())
@@ -370,6 +378,7 @@ string IRGenerator::generateModifier(
 	return m_context.functionCollector().createFunction(functionName, [&]() {
 		m_context.resetLocalVariables();
 		Whiskers t(R"(
+			<sourceLocationComment>
 			function <functionName>(<params>)<?+retParams> -> <retParams></+retParams> {
 				<assignRetParams>
 				<evalArgs>
@@ -398,6 +407,7 @@ string IRGenerator::generateModifier(
 			_modifierInvocation.name().annotation().referencedDeclaration
 		);
 		solAssert(modifier, "");
+		t("sourceLocationComment", sourceLocationComment(*modifier, m_context));
 		switch (*_modifierInvocation.name().annotation().requiredLookup)
 		{
 		case VirtualLookup::Virtual:
@@ -448,11 +458,13 @@ string IRGenerator::generateFunctionWithModifierInner(FunctionDefinition const& 
 	return m_context.functionCollector().createFunction(functionName, [&]() {
 		m_context.resetLocalVariables();
 		Whiskers t(R"(
+			<sourceLocationComment>
 			function <functionName>(<params>)<?+retParams> -> <retParams></+retParams> {
 				<assignRetParams>
 				<body>
 			}
 		)");
+		t("sourceLocationComment", sourceLocationComment(_function, m_context));
 		t("functionName", functionName);
 		vector<string> retParams;
 		vector<string> retParamsIn;
@@ -490,26 +502,30 @@ string IRGenerator::generateGetter(VariableDeclaration const& _varDecl)
 			solAssert(paramTypes.empty(), "");
 			solUnimplementedAssert(type->sizeOnStack() == 1, "");
 			return Whiskers(R"(
-				function <functionName>() -> rval {
-					rval := loadimmutable("<id>")
-				}
-			)")
-			("functionName", functionName)
-			("id", to_string(_varDecl.id()))
-			.render();
+					<sourceLocationComment>
+					function <functionName>() -> rval {
+						rval := loadimmutable("<id>")
+					}
+				)")
+				("sourceLocationComment", sourceLocationComment(_varDecl, m_context))
+				("functionName", functionName)
+				("id", to_string(_varDecl.id()))
+				.render();
 		}
 		else if (_varDecl.isConstant())
 		{
 			solAssert(paramTypes.empty(), "");
 			return Whiskers(R"(
-				function <functionName>() -> <ret> {
-					<ret> := <constantValueFunction>()
-				}
-			)")
-			("functionName", functionName)
-			("constantValueFunction", IRGeneratorForStatements(m_context, m_utils).constantValueFunction(_varDecl))
-			("ret", suffixedVariableNameList("ret_", 0, _varDecl.type()->sizeOnStack()))
-			.render();
+					<sourceLocationComment>
+					function <functionName>() -> <ret> {
+						<ret> := <constantValueFunction>()
+					}
+				)")
+				("sourceLocationComment", sourceLocationComment(_varDecl, m_context))
+				("functionName", functionName)
+				("constantValueFunction", IRGeneratorForStatements(m_context, m_utils).constantValueFunction(_varDecl))
+				("ret", suffixedVariableNameList("ret_", 0, _varDecl.type()->sizeOnStack()))
+				.render();
 		}
 
 		string code;
@@ -617,15 +633,17 @@ string IRGenerator::generateGetter(VariableDeclaration const& _varDecl)
 		}
 
 		return Whiskers(R"(
-			function <functionName>(<params>) -> <retVariables> {
-				<code>
-			}
-		)")
-		("functionName", functionName)
-		("params", joinHumanReadable(parameters))
-		("retVariables", joinHumanReadable(returnVariables))
-		("code", std::move(code))
-		.render();
+				<sourceLocationComment>
+				function <functionName>(<params>) -> <retVariables> {
+					<code>
+				}
+			)")
+			("functionName", functionName)
+			("params", joinHumanReadable(parameters))
+			("retVariables", joinHumanReadable(returnVariables))
+			("code", std::move(code))
+			("sourceLocationComment", sourceLocationComment(_varDecl, m_context))
+			.render();
 	});
 }
 
@@ -731,6 +749,7 @@ void IRGenerator::generateConstructors(ContractDefinition const& _contract)
 		m_context.resetLocalVariables();
 		m_context.functionCollector().createFunction(IRNames::constructor(*contract), [&]() {
 			Whiskers t(R"(
+				<sourceLocationComment>
 				function <functionName>(<params><comma><baseParams>) {
 					<evalBaseArguments>
 					<?hasNextConstructor> <nextConstructor>(<nextParams>) </hasNextConstructor>
@@ -740,8 +759,14 @@ void IRGenerator::generateConstructors(ContractDefinition const& _contract)
 			)");
 			vector<string> params;
 			if (contract->constructor())
+			{
+				t("sourceLocationComment", sourceLocationComment(*contract->constructor(), m_context));
 				for (ASTPointer<VariableDeclaration> const& varDecl: contract->constructor()->parameters())
 					params += m_context.addLocalVariable(*varDecl).stackSlots();
+			}
+			else
+				t("sourceLocationComment", sourceLocationComment(*contract, m_context));
+
 			t("params", joinHumanReadable(params));
 			vector<string> baseParams = listAllParams(baseConstructorParams);
 			t("baseParams", joinHumanReadable(baseParams));

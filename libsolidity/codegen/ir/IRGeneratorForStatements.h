@@ -47,7 +47,8 @@ public:
 	):
 		m_context(_context),
 		m_placeholderCallback(std::move(_placeholderCallback)),
-		m_utils(_utils)
+		m_utils(_utils),
+		m_lastLocation({})
 	{}
 
 	std::string code() const;
