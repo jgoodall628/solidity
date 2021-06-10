@@ -78,6 +78,7 @@ BOOST_AUTO_TEST_CASE(no_options)
 
 	CommandLineOptions expectedOptions;
 	expectedOptions.sourceFilePaths = {"contract.sol"};
+	expectedOptions.coloredOutput = true;
 	expectedOptions.expectedExecutionsPerDeployment = 200;
 	expectedOptions.initializeModelChecker = true;
 	expectedOptions.modelCheckerSettings = {

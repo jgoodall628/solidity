@@ -128,7 +128,7 @@ struct CommandLineOptions
 
 	// Output Formatting
 	bool prettyJson = false;
-	bool coloredOutput = true;
+	bool coloredOutput = false;
 	bool withErrorIds = false;
 
 	// Output Components
