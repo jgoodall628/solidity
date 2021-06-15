@@ -26,11 +26,6 @@
 #include <algorithm>
 #include <string>
 
-namespace solidity::util
-{
-	class Whiskers;
-}
-
 namespace solidity::frontend
 {
 

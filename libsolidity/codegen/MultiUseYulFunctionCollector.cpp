@@ -48,9 +48,9 @@ string MultiUseYulFunctionCollector::requestedFunctions(string const& _sourceLoc
 			regex functionRegex("function[ \t]+[a-zA-Z0-9_$]+\\([^\\)]*\\)");
 			solAssert(regex_search(code, match, functionRegex), "");
 
-			size_t functionStart = (size_t) match.position();
+			size_t functionStart = size_t(match.position());
 			size_t lineStart = code.substr(0, functionStart).find_last_of('\n');
-			size_t numTabs = lineStart == string::npos ? 0 : functionStart - lineStart - 1;
+			size_t numTabs = lineStart == string::npos ? 0 : (functionStart - lineStart - 1);
 			result += code.substr(0, functionStart) +
 				_sourceLocationComment +
 				"\n" +
