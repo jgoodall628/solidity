@@ -1378,44 +1378,7 @@ void CompilerStack::generateEVMFromIR(ContractDefinition const& _contract)
 	// TODO: support passing metadata
 
 	tie(compiledContract.evmAssembly, compiledContract.evmRuntimeAssembly) = stack.assembleEVM(IRNames::deployedObject(_contract));
-	solAssert(compiledContract.evmAssembly, "");
-	try
-	{
-		// Assemble deployment (incl. runtime) object.
-		compiledContract.object = compiledContract.evmAssembly->assemble();
-	}
-	catch(evmasm::AssemblyException const&)
-	{
-		solAssert(false, "Assembly exception for bytecode");
-	}
-	solAssert(compiledContract.object.immutableReferences.empty(), "Leftover immutables.");
-
-	solAssert(compiledContract.evmRuntimeAssembly, "");
-	try
-	{
-		// Assemble runtime object.
-		compiledContract.runtimeObject = compiledContract.evmRuntimeAssembly->assemble();
-	}
-	catch(evmasm::AssemblyException const&)
-	{
-		solAssert(false, "Assembly exception for deployed bytecode");
-	}
-
-	// Throw a warning if EIP-170 limits are exceeded:
-	//   If contract creation returns data with length greater than 0x6000 (214 + 213) bytes,
-	//   contract creation fails with an out of gas error.
-	if (
-		m_evmVersion >= langutil::EVMVersion::spuriousDragon() &&
-		compiledContract.runtimeObject.bytecode.size() > 0x6000
-	)
-		m_errorReporter.warning(
-			9609_error,
-			_contract.location(),
-			"Contract code size exceeds 24576 bytes (a limit introduced in Spurious Dragon). "
-			"This contract may not be deployable on mainnet. "
-			"Consider enabling the optimizer (with a low \"runs\" value!), "
-			"turning off revert strings, or using libraries."
-		);
+	assemble(_contract, compiledContract.evmAssembly, compiledContract.evmRuntimeAssembly);
 }
 
 void CompilerStack::generateEwasm(ContractDefinition const& _contract)
