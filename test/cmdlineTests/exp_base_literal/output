@@ -20,6 +20,7 @@ object "C_81" {
 
         return(_1, datasize("C_81_deployed"))
 
+        /// @src 0:82,370
         function allocate_unbounded() -> memPtr {
             memPtr := mload(64)
         }
@@ -29,6 +30,7 @@ object "C_81" {
 
         }
 
+        /// @src 0:82,370
         function revert_error_ca66f745a3ce8ff40e2ccaf1ad45db7774001b90d25810abd9040049be7bf4bb() {
             revert(0, 0)
         }
@@ -61,11 +63,13 @@ object "C_81" {
             if iszero(calldatasize()) {  }
             revert_error_42b3090547df1d2001c96683413b8cf91c1b902ef5e3cb8d9f6f304cf7446f74()
 
+            /// @src 0:82,370
             function abi_decode_t_uint256(offset, end) -> value {
                 value := calldataload(offset)
                 validator_revert_t_uint256(value)
             }
 
+            /// @src 0:82,370
             function abi_decode_tuple_t_uint256t_uint256t_uint256t_uint256(headStart, dataEnd) -> value0, value1, value2, value3 {
                 if slt(sub(dataEnd, headStart), 128) { revert_error_dbdddcbe895c83990c08b3492a0e83918d802a52331272ac6fdb6a7c4aea3b1b() }
 
@@ -99,14 +103,17 @@ object "C_81" {
 
             }
 
+            /// @src 0:82,370
             function abi_encode_t_int256_to_t_int256_fromStack(value, pos) {
                 mstore(pos, cleanup_t_int256(value))
             }
 
+            /// @src 0:82,370
             function abi_encode_t_uint256_to_t_uint256_fromStack(value, pos) {
                 mstore(pos, cleanup_t_uint256(value))
             }
 
+            /// @src 0:82,370
             function abi_encode_tuple_t_uint256_t_int256_t_uint256_t_uint256__to_t_uint256_t_int256_t_uint256_t_uint256__fromStack(headStart , value0, value1, value2, value3) -> tail {
                 tail := add(headStart, 128)
 
@@ -120,16 +127,19 @@ object "C_81" {
 
             }
 
+            /// @src 0:82,370
             function allocate_unbounded() -> memPtr {
                 memPtr := mload(64)
             }
 
+            /// @src 0:82,370
             function checked_exp_t_rational_0_by_1_t_uint256(exponent) -> power {
                 exponent := cleanup_t_uint256(exponent)
 
                 power := exp(0, exponent)
             }
 
+            /// @src 0:82,370
             function checked_exp_t_rational_10_by_1_t_uint256(exponent) -> power {
                 exponent := cleanup_t_uint256(exponent)
 
@@ -138,6 +148,7 @@ object "C_81" {
                 power := exp(10, exponent)
             }
 
+            /// @src 0:82,370
             function checked_exp_t_rational_115792089237316195423570985008687907853269984665640564039457584007913129639935_by_1_t_uint256(exponent) -> power {
                 exponent := cleanup_t_uint256(exponent)
 
@@ -146,12 +157,14 @@ object "C_81" {
                 power := exp(115792089237316195423570985008687907853269984665640564039457584007913129639935, exponent)
             }
 
+            /// @src 0:82,370
             function checked_exp_t_rational_1_by_1_t_uint256(exponent) -> power {
                 exponent := cleanup_t_uint256(exponent)
 
                 power := exp(1, exponent)
             }
 
+            /// @src 0:82,370
             function checked_exp_t_rational_2_by_1_t_uint256(exponent) -> power {
                 exponent := cleanup_t_uint256(exponent)
 
@@ -160,12 +173,14 @@ object "C_81" {
                 power := exp(2, exponent)
             }
 
+            /// @src 0:82,370
             function checked_exp_t_rational_minus_1_by_1_t_uint256(exponent) -> power {
                 exponent := cleanup_t_uint256(exponent)
 
                 power := exp(115792089237316195423570985008687907853269984665640564039457584007913129639935, exponent)
             }
 
+            /// @src 0:82,370
             function checked_exp_t_rational_minus_2_by_1_t_uint256(exponent) -> power {
                 exponent := cleanup_t_uint256(exponent)
 
@@ -174,38 +189,47 @@ object "C_81" {
                 power := exp(115792089237316195423570985008687907853269984665640564039457584007913129639934, exponent)
             }
 
+            /// @src 0:82,370
             function cleanup_t_int256(value) -> cleaned {
                 cleaned := value
             }
 
+            /// @src 0:82,370
             function cleanup_t_uint256(value) -> cleaned {
                 cleaned := value
             }
 
+            /// @src 0:82,370
             function convert_t_rational_0_by_1_to_t_uint256(value) -> converted {
                 converted := cleanup_t_uint256(value)
             }
 
+            /// @src 0:82,370
             function convert_t_rational_10_by_1_to_t_uint256(value) -> converted {
                 converted := cleanup_t_uint256(value)
             }
 
+            /// @src 0:82,370
             function convert_t_rational_115792089237316195423570985008687907853269984665640564039457584007913129639935_by_1_to_t_uint256(value) -> converted {
                 converted := cleanup_t_uint256(value)
             }
 
+            /// @src 0:82,370
             function convert_t_rational_1_by_1_to_t_uint256(value) -> converted {
                 converted := cleanup_t_uint256(value)
             }
 
+            /// @src 0:82,370
             function convert_t_rational_2_by_1_to_t_uint256(value) -> converted {
                 converted := cleanup_t_uint256(value)
             }
 
+            /// @src 0:82,370
             function convert_t_rational_minus_1_by_1_to_t_int256(value) -> converted {
                 converted := cleanup_t_int256(value)
             }
 
+            /// @src 0:82,370
             function convert_t_rational_minus_2_by_1_to_t_int256(value) -> converted {
                 converted := cleanup_t_int256(value)
             }
@@ -339,28 +363,34 @@ object "C_81" {
 
             }
 
+            /// @src 0:82,370
             function panic_error_0x11() {
                 mstore(0, 35408467139433450592217433187231851964531694900788300625387963629091585785856)
                 mstore(4, 0x11)
                 revert(0, 0x24)
             }
 
+            /// @src 0:82,370
             function revert_error_42b3090547df1d2001c96683413b8cf91c1b902ef5e3cb8d9f6f304cf7446f74() {
                 revert(0, 0)
             }
 
+            /// @src 0:82,370
             function revert_error_c1322bf8034eace5e0b5c7295db60986aa89aae5e0ea0873e4689e076861a5db() {
                 revert(0, 0)
             }
 
+            /// @src 0:82,370
             function revert_error_ca66f745a3ce8ff40e2ccaf1ad45db7774001b90d25810abd9040049be7bf4bb() {
                 revert(0, 0)
             }
 
+            /// @src 0:82,370
             function revert_error_dbdddcbe895c83990c08b3492a0e83918d802a52331272ac6fdb6a7c4aea3b1b() {
                 revert(0, 0)
             }
 
+            /// @src 0:82,370
             function shift_right_224_unsigned(value) -> newValue {
                 newValue :=
 
@@ -368,14 +398,17 @@ object "C_81" {
 
             }
 
+            /// @src 0:82,370
             function validator_revert_t_uint256(value) {
                 if iszero(eq(value, cleanup_t_uint256(value))) { revert(0, 0) }
             }
 
+            /// @src 0:82,370
             function zero_value_for_split_t_int256() -> ret {
                 ret := 0
             }
 
+            /// @src 0:82,370
             function zero_value_for_split_t_uint256() -> ret {
                 ret := 0
             }

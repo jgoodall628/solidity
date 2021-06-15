@@ -26,19 +26,39 @@
 #include <libsolutil/Whiskers.h>
 #include <libsolutil/StringUtils.h>
 
+#include <regex>
+
 using namespace std;
 using namespace solidity;
 using namespace solidity::frontend;
 using namespace solidity::util;
 
-string MultiUseYulFunctionCollector::requestedFunctions()
+string MultiUseYulFunctionCollector::requestedFunctions(string const& _sourceLocationComment)
 {
 	string result;
+	// std::map guarantees ascending order when iterating through its keys.
 	for (auto const& [name, code]: m_requestedFunctions)
 	{
 		solAssert(code != "<<STUB<<", "");
-		// std::map guarantees ascending order when iterating through its keys.
-		result += code;
+
+		// Insert source location comment if it doesn't exist already.
+		if (code.find("/// @src") == string::npos && !_sourceLocationComment.empty())
+		{
+			smatch match;
+			regex functionRegex("function[ \t]+[a-zA-Z0-9_$]+\\([^\\)]*\\)");
+			solAssert(regex_search(code, match, functionRegex), "");
+
+			size_t functionStart = (size_t) match.position();
+			size_t lineStart = code.substr(0, functionStart).find_last_of('\n');
+			size_t numTabs = lineStart == string::npos ? 0 : functionStart - lineStart - 1;
+			result += code.substr(0, functionStart) +
+				_sourceLocationComment +
+				"\n" +
+				string(numTabs, '\t') +
+				code.substr(functionStart, string::npos);
+		}
+		else
+			result += code;
 	}
 	m_requestedFunctions.clear();
 	return result;

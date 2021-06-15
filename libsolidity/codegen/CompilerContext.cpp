@@ -194,7 +194,7 @@ void CompilerContext::appendYulUtilityFunctions(OptimiserSettings const& _optimi
 	solAssert(!m_appendYulUtilityFunctionsRan, "requestedYulFunctions called more than once.");
 	m_appendYulUtilityFunctionsRan = true;
 
-	string code = m_yulFunctionCollector.requestedFunctions();
+	string code = m_yulFunctionCollector.requestedFunctions("");
 	if (!code.empty())
 	{
 		appendInlineAssembly(

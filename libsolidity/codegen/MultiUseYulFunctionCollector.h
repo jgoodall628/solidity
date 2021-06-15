@@ -51,7 +51,9 @@ public:
 	/// platform-independent.
 	/// Clears the internal list, i.e. calling it again will result in an
 	/// empty return value.
-	std::string requestedFunctions();
+	/// @param _sourceLocationComment source location comment to add to every
+	///        generated function that has no source location comment yet.
+	std::string requestedFunctions(std::string const& _sourceLocationComment);
 
 	/// @returns true IFF a function with the specified name has already been collected.
 	bool contains(std::string const& _name) const { return m_requestedFunctions.count(_name) > 0; }

@@ -187,9 +187,9 @@ string IRGenerator::generate(
 	t("deploy", deployCode(_contract));
 	generateConstructors(_contract);
 	set<FunctionDefinition const*> creationFunctionList = generateQueuedFunctions();
-	InternalDispatchMap internalDispatchMap = generateInternalDispatchFunctions();
+	InternalDispatchMap internalDispatchMap = generateInternalDispatchFunctions(_contract);
 
-	t("functions", m_context.functionCollector().requestedFunctions());
+	t("functions", m_context.functionCollector().requestedFunctions(sourceLocationComment(_contract, m_context)));
 	t("subObjects", subObjectSources(m_context.subObjectsCreated()));
 
 	// This has to be called only after all other code generation for the creation object is complete.
@@ -208,8 +208,8 @@ string IRGenerator::generate(
 	t("library_address", IRNames::libraryAddressImmutable());
 	t("dispatch", dispatchRoutine(_contract));
 	set<FunctionDefinition const*> deployedFunctionList = generateQueuedFunctions();
-	generateInternalDispatchFunctions();
-	t("deployedFunctions", m_context.functionCollector().requestedFunctions());
+	generateInternalDispatchFunctions(_contract);
+	t("deployedFunctions", m_context.functionCollector().requestedFunctions(sourceLocationComment(_contract, m_context)));
 	t("deployedSubObjects", subObjectSources(m_context.subObjectsCreated()));
 
 	// This has to be called only after all other code generation for the deployed object is complete.
@@ -247,7 +247,7 @@ set<FunctionDefinition const*> IRGenerator::generateQueuedFunctions()
 	return functions;
 }
 
-InternalDispatchMap IRGenerator::generateInternalDispatchFunctions()
+InternalDispatchMap IRGenerator::generateInternalDispatchFunctions(ContractDefinition const& _contract)
 {
 	solAssert(
 		m_context.functionGenerationQueueEmpty(),
@@ -261,6 +261,7 @@ InternalDispatchMap IRGenerator::generateInternalDispatchFunctions()
 		string funName = IRNames::internalDispatch(arity);
 		m_context.functionCollector().createFunction(funName, [&]() {
 			Whiskers templ(R"(
+				<sourceLocationComment>
 				function <functionName>(fun<?+in>, <in></+in>) <?+out>-> <out></+out> {
 					switch fun
 					<#cases>
@@ -272,6 +273,7 @@ InternalDispatchMap IRGenerator::generateInternalDispatchFunctions()
 					default { <panic>() }
 				}
 			)");
+			templ("sourceLocationComment", sourceLocationComment(_contract, m_context));
 			templ("functionName", funName);
 			templ("panic", m_utils.panicFunction(PanicCode::InvalidInternalFunction));
 			templ("in", suffixedVariableNameList("in_", 0, arity.in));
@@ -996,7 +998,7 @@ void IRGenerator::resetContext(ContractDefinition const& _contract)
 		"Reset function generation queue while it still had functions."
 	);
 	solAssert(
-		m_context.functionCollector().requestedFunctions().empty(),
+		m_context.functionCollector().requestedFunctions(sourceLocationComment(_contract, m_context)).empty(),
 		"Reset context while it still had functions."
 	);
 	solAssert(

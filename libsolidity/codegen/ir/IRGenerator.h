@@ -73,7 +73,7 @@ private:
 	/// possibly be called via a pointer.
 	/// @return The content of the dispatch for reuse in runtime code. Reuse is necessary because
 	/// pointers to functions can be passed from the creation code in storage variables.
-	InternalDispatchMap generateInternalDispatchFunctions();
+	InternalDispatchMap generateInternalDispatchFunctions(ContractDefinition const& _contract);
 	/// Generates code for and returns the name of the function.
 	std::string generateFunction(FunctionDefinition const& _function);
 	std::string generateModifier(
